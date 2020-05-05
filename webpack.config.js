@@ -3,33 +3,39 @@ const Webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const outputNameFormat = '[name].[hash:6]';
+const outputNameFormat = '[name]';
+const mode = process.env.NODE_ENV || 'development';
+const entry = {
+    index: [
+        path.resolve(__dirname, './'),
+        // path.resolve(__dirname, './src/styles.css'),
+        path.resolve(__dirname, './node_modules/webpack-hot-middleware/client')
+        // path.resolve(
+        //     __dirname,
+        //     "./node_modules/webpack-hot-middleware/client?reload=true"
+        // ),
+    ]
+};
 
 module.exports = {
     mode: 'development',
-    entry: [path.resolve(__dirname, 'src/main'), path.resolve(__dirname, 'src/styles')],
+    entry: entry,
     devtool: 'source-map',
     output: {
         path: path.resolve(__dirname, 'dist'),
         filename: `${outputNameFormat}.js`
     },
     optimization: {
+        namedModules: true,
         splitChunks: {
             chunks: 'all'
         }
     },
-    devServer: {
-        stats: {
-            all: false,
-            timings: true
-        },
-        host: process.env.HOST,
-        port: 9000, //process.env.PORT,
-        open: false,
-        overlay: true
-    },
     resolve: {
-        extensions: ['.js', '.ts', '.css']
+        extensions: ['.js', '.ts', '.css'],
+        alias: {
+            src: path.resolve(__dirname, './src')
+        }
     },
     plugins: [
         new CleanWebpackPlugin(),
@@ -43,13 +49,17 @@ module.exports = {
         }),
         new HtmlWebpackPlugin({
             title: 'webpack-typescript-boilerplate'
-        })
+        }),
+        new Webpack.HotModuleReplacementPlugin()
     ],
     module: {
         rules: [
             {
                 test: /\.(ts|js)x?$/,
-                include: [path.resolve(__dirname, 'src')],
+                include: [
+                    path.resolve(__dirname, './index'),
+                    path.resolve(__dirname, './src')
+                ],
                 loaders: ['ts-loader']
             },
             {
